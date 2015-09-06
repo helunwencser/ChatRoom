@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>FSE Chat Room</title>
+<style>
+body{
+	background-color: #A9A9A9;
+}
+
+#headblock{
+	position: fixed;
+	top: 0px;
+	left:20%;
+	right:20%;
+}
+
+h1{
+	color: rgb(255, 255, 255);
+	font-size: 50px;
+	background-color: #1E90FF;
+	text-shadow: rgb(204, 204, 204) 0px 1px 0px, rgb(201, 201, 201) 0px 2px 0px, rgb(187, 187, 187) 0px 3px 0px, rgb(185, 185, 185) 0px 4px 0px, rgb(170, 170, 170) 0px 5px 0px, rgba(0, 0, 0, 0.0980392) 0px 6px 1px, rgba(0, 0, 0, 0.0980392) 0px 0px 5px, rgba(0, 0, 0, 0.298039) 0px 1px 3px, rgba(0, 0, 0, 0.2) 0px 3px 5px, rgba(0, 0, 0, 0.247059) 0px 5px 10px, rgba(0, 0, 0, 0.2) 0px 10px 10px, rgba(0, 0, 0, 0.14902) 0px 20px 20px;
+	border:10px solid #D9D2D2;
+	border-radius:50px ;
+}
+
+#contentblock{
+	position: fixed;
+	top: 103px;
+	left: 20%;
+	right: 20%;
+	bottom: 185px;
+	border:10px solid #D9D2D2;
+	border-radius:50px ;
+    padding:5px; 
+    background:#ddd;  
+    margin-top:10px; 
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+#content{
+  background-color: #DDDDDD;
+  color: #000000;
+  padding: 4px;
+  margin: 4px;
+  font-family: georgia;
+  font-style: italic;
+  font-weight: lighter;
+  font-size: 18px;
+  font-variant: normal;
+  text-align: left;
+  background-repeat: repeat;
+  border-radius: 25px;
+  text-shadow: 1px 0px 0px #800000;
+}
+
+textarea{
+  	position: fixed;
+  	bottom: 70px;
+  	left: 30%;
+  	right: 30%;
+	background:#00FFFF;
+	color:#7F8C8F;
+	border:10px solid #D9D2D2;
+	border-radius:50px ;
+	font-size:21px ;
+	width: 500px ;
+	padding: 10px ;
+	box-shadow: 0px 0px 25px #DBD4D4; 
+	-webkit-box-shadow: 0px 0px 25px #DBD4D4; 
+	-moz-box-shadow: 0px 0px 25px #DBD4D4;
+}
+
+button {
+  position: fixed;
+  bottom: 0;
+  left: 45%;
+  right: 45%;
+  background: #3498db;
+  background-image: -webkit-linear-gradient(top, #3498db, #2980b9);
+  background-image: -moz-linear-gradient(top, #3498db, #2980b9);
+  background-image: -ms-linear-gradient(top, #3498db, #2980b9);
+  background-image: -o-linear-gradient(top, #3498db, #2980b9);
+  background-image: linear-gradient(to bottom, #3498db, #2980b9);
+  -webkit-border-radius: 28;
+  -moz-border-radius: 28;
+  border-radius: 28px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 40px;
+  padding: 0px 20px 0px 20px;
+  text-decoration: none;
+  border:10px solid #D9D2D2;
+  border-radius:50px ;
+}
+
+button:hover {
+  background: #3cb0fd;
+  background-image: -webkit-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: -moz-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: -ms-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: -o-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: linear-gradient(to bottom, #3cb0fd, #3498db);
+  text-decoration: none;
+}
+</style>
+
+<script src="javascripts/jquery.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+
+var msginput = $("#msginput");
+
+socket = io.connect('http://localhost:80');
+
+socket.on('newconnection', function(){
+	var person = prompt("Please select your nickname", "");
+	while(person == null || person == ''){
+		person = prompt("Please select your nickname correctly", "");
+	}
+	//socket.send(person);
+	socket.emit('person', person);
+});
+
+socket.on('systemmsg', function(msg){
+	var p = ' ';
+	if(msg.msgtype == 'welcome'){
+		p = '<p> System @' + msg.time + ' : Welcome ' + msg.text + '</p>';
+	}else if(msg.msgtype == 'disconnect'){
+		p = '<p> System @' + msg.time + ' : ' + msg.text + ' has left' + '</p>';
+	}
+	$("#content").prepend(p);
+	//$("#content").append(p);
+});
+
+socket.on('message', function(msg){
+	var p = '<p>' + msg.sender + ' @' + msg.time + ': ' + msg.text + '</p>';
+	$("#content").prepend(p);
+	//$("#content").append(p);
+});
+
+function postmsg(){
+	var msg = $("#msginput").val();
+	if(!msg)
+		return;
+	//socket.send(msg);
+	socket.emit('message', msg);
+	$("#msginput").val('');
+}
+</script>
+
+</head>
+<body>
+
+
+<div id = "headblock", align = "center">
+	<h1>FSE Chat Room</h1>
+</div>
+
+<div id = "contentblock">
+	<p id = "content"></p>
+</div>
+
+<div>
+	<textarea id = "msginput", autofocus = "true", rows = "3", cols = "50">Input your message here</textarea>
+</div>
+
+<div>
+	<button id = "post", onclick = 'postmsg()'>Post</button>
+</div>
+
+</body>
+</html>
